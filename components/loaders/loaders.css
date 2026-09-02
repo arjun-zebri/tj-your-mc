@@ -1,0 +1,261 @@
+/*
+  The loader.
+
+  One run of light. It leaves the tail of the C in TJ's name, runs the circle,
+  comes into the start of the T, writes the name letter by letter with nothing
+  lifted, leaves the tail of the C a second time, climbs the coiled wire and
+  drops into the base of the microphone. The microphone fills from the bottom of
+  the handle to the top of the grille, and that is the end of it.
+
+  The circle, the letters and the wire are one path and one dash offset. The
+  two waypoints the loader passes in as custom properties let the light spend
+  longer on the writing than the geometry alone would give it.
+
+  Kept out of globals.css deliberately. This route is a working page.
+*/
+
+.loader,
+.loader-intro {
+  --cycle: 6.5s;
+}
+
+.loader {
+  position: relative;
+  aspect-ratio: 1;
+  color: var(--color-chalk);
+  /* So the artwork can be placed in cqmin, a fraction of the box at any size. */
+  container-type: size;
+}
+
+.loader__fade {
+  position: absolute;
+  inset: 0;
+  /*
+    Filters will not take container units, so the blur below reads em instead,
+    and this makes 1em a hundredth of the box. Set here rather than on .loader,
+    because container units on the container itself resolve against its parent.
+  */
+  font-size: 1cqmin;
+  animation: loader-fade var(--cycle) ease-in infinite;
+}
+
+.loader__stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+/*
+  The artwork box. Both mask layers share this frame exactly. Its height and
+  lift are mirrored by ART_HEIGHT and ART_LIFT in scripts/loader-path.py, which
+  is how the wire knows where the base of the handle is. Change one, change both.
+*/
+.loader__art {
+  position: relative;
+  height: 56%;
+  aspect-ratio: 720 / 997;
+  /* 14 units on the 320 box, lifting the handle clear of the name. */
+  transform: translateY(-4.375cqmin);
+}
+
+.loader__art span {
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+/*
+  The tuxedo, the bow tie and the microphone. Sits dim in the dark while the
+  light is on its way round and up the handle, then comes up to white as the
+  grille lights. Base state is the finished state, so with motion off it rests
+  lit.
+*/
+.loader__mark {
+  -webkit-mask-image: url("/loader-mark.webp");
+  mask-image: url("/loader-mark.webp");
+  animation: loader-mark-up var(--cycle) ease-out infinite;
+}
+
+/*
+  The light off the grille. One soft radial glow, centred on it, that swells
+  outward once as the fill arrives and then settles. No blur filter and no mask
+  animation: those were what made the finish stutter.
+*/
+.loader__art span.loader__glow {
+  inset: auto;
+  left: 50.4%;
+  top: 50%;
+  width: 140%;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--color-warmlight) 70%, #ffffff) 0%,
+    color-mix(in oklab, var(--color-warmlight) 45%, transparent) 14%,
+    color-mix(in oklab, var(--color-warmlight) 12%, transparent) 36%,
+    transparent 60%
+  );
+  -webkit-mask-image: none;
+  mask-image: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.2);
+  animation: loader-glow var(--cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+/*
+  The microphone alone, in amber, wiped in from the bottom of the handle to the
+  top of the grille. The mask already cuts the shape, so the wipe is a plain
+  horizontal edge and the artwork does the rest. 89.5% is just under the bottom
+  of the handle and 43% just over the top of the grille, both measured off the
+  mask.
+*/
+.loader__mic {
+  color: var(--color-warmlight);
+  -webkit-mask-image: url("/loader-mic.webp");
+  mask-image: url("/loader-mic.webp");
+  clip-path: inset(89.5% 0 0 0);
+  animation: loader-mic-fill var(--cycle) cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.loader__draw {
+  animation: loader-draw var(--cycle) linear infinite;
+}
+
+/*
+  The run. Linear between waypoints, so the light moves at a steady pace round
+  the circle, slows to write the name, and picks up again on the wire.
+*/
+@keyframes loader-draw {
+  /* 1010, not 1000: parks the round cap off the path too. See SignatureRing. */
+  0%,
+  3% {
+    stroke-dashoffset: 1010;
+  }
+  36% {
+    stroke-dashoffset: var(--cable-circle-end);
+  }
+  70% {
+    stroke-dashoffset: var(--cable-letters-end);
+  }
+  78%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/*
+  The light reaches the base of the handle at 78%. Both of these wait a beat
+  after that before they move, so the arrival registers before anything answers
+  it, and the fill starts slowly rather than jumping.
+*/
+/* The fill reaches the grille at 92%. Both of these answer it. */
+@keyframes loader-mark-up {
+  0%,
+  90% {
+    opacity: 0.22;
+    color: var(--color-chalk);
+  }
+  97%,
+  100% {
+    opacity: 1;
+    color: #ffffff;
+  }
+}
+
+@keyframes loader-glow {
+  0%,
+  91% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
+  96% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  100% {
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes loader-mic-fill {
+  0%,
+  82% {
+    clip-path: inset(89.5% 0 0 0);
+  }
+  92%,
+  100% {
+    clip-path: inset(43% 0 0 0);
+  }
+}
+
+/* Holds on the finished lockup, then lets go so the loop can start clean. */
+@keyframes loader-fade {
+  0%,
+  99% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/*
+  Played once, as an arrival, rather than looped. Two classes so this out-ranks
+  the shorthand on each layer above, and fill-mode forwards so everything holds
+  its final frame instead of snapping back to the start.
+*/
+.loader.loader--once,
+.loader.loader--once * {
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+/*
+  The loader used as an arrival, over the whole screen. Fades out with the
+  lockup at the end, leaving the page behind it.
+*/
+.loader-intro {
+  position: fixed;
+  inset: 0;
+  /* Above the header, the drawer and the skip link. Only the cursor sits higher. */
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background-color: var(--color-ink);
+  animation: loader-intro-out var(--cycle) ease-in forwards;
+}
+
+@keyframes loader-intro-out {
+  0%,
+  99% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/*
+  With motion off, the global override in globals.css finishes every animation
+  immediately and each element falls back to its un-animated style. The
+  microphone's is wrong on its own, clipped to nothing, so it is given its
+  finished state here. What is left is the whole lockup, lit.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .loader__mic {
+    clip-path: inset(43% 0 0 0);
+  }
+
+  .loader__art span.loader__glow {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}

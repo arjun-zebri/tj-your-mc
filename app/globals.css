@@ -1,0 +1,523 @@
+@import "tailwindcss";
+
+/*
+  Design tokens. The palette and type decisions live in
+  .claude/docs/02-brand-and-design.md. This file is where they become real.
+
+  The idea behind the palette: the room at 9pm, not the ceremony at 3pm. Warm
+  near-black with a purple bias, one amber accent standing in for uplighting.
+  Not a dark UI theme.
+*/
+@theme {
+  /* Page background. The colour of a dark room. */
+  --color-ink: #141018;
+  /* Raised surfaces: cards, the form panel. Elevation comes from this against ink, not from shadow. */
+  --color-stage: #221b27;
+  /* Signature accent, warm uplighting amber. One thing per screen gets this. */
+  --color-warmlight: #f2a65a;
+  /* Body text on dark. Never pure white, too clinical against warm tones. */
+  --color-chalk: #f5f0ea;
+  /* Secondary text, captions, labels. Check contrast before using below 16px. */
+  --color-dust: #a79ca9;
+  /* Background for the one or two light sections that need a breather, with ink as text. */
+  --color-paper: #f5f0ea;
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+
+  /*
+    Display sizes are genuinely large. A hero headline at 28px is a blog post.
+    Line height runs inverse to size and large sizes carry negative tracking,
+    otherwise type set at 72px reads loose.
+  */
+  --text-display-xs: 1.6rem;
+  --text-display-xs--line-height: 1.18;
+  --text-display-xs--letter-spacing: -0.015em;
+  --text-display-sm: 2.25rem;
+  --text-display-sm--line-height: 1.1;
+  --text-display-sm--letter-spacing: -0.02em;
+  --text-display-md: 3.25rem;
+  --text-display-md--line-height: 1.06;
+  --text-display-md--letter-spacing: -0.025em;
+  --text-display-lg: 4.5rem;
+  --text-display-lg--line-height: 1.03;
+  --text-display-lg--letter-spacing: -0.03em;
+  --text-display-xl: 6rem;
+  --text-display-xl--line-height: 1;
+  --text-display-xl--letter-spacing: -0.035em;
+
+  /* Prose measure. Under 70 characters, per the type rules. */
+  --container-measure: 34rem;
+}
+
+@layer base {
+  html {
+    /* The dark palette is the design, not a preference. Tells the browser to paint form controls and scrollbars to match. */
+    color-scheme: dark;
+
+    /*
+      The mobile drawer parks off screen at translate-x-full, which is real
+      layout to the right of the viewport and makes the page scroll sideways.
+      Clip removes that. It has to be `clip` rather than `hidden`: overflow
+      hidden on an ancestor silently breaks position sticky, which the header
+      depends on.
+    */
+    overflow-x: clip;
+
+    /*
+      Opening the drawer locks body scroll, which removes the scrollbar and
+      shifts every centred container by its width. Reserving the gutter up
+      front means locking changes nothing.
+    */
+    scrollbar-gutter: stable;
+    /*
+      The page background lives here rather than on body, so the fixed speck
+      layer can sit at z-index -1: above the canvas, below every block
+      background. Put it on body and the specks paint behind it and vanish.
+    */
+    background-color: var(--color-ink);
+  }
+
+  body {
+    background-color: transparent;
+    color: var(--color-chalk);
+    font-family: var(--font-body);
+    /* Body 17 to 18px on mobile, line height 1.55. */
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media (min-width: 48rem) {
+    body {
+      font-size: 1.125rem;
+    }
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    /* Removes the orphans that make a page look unfinished. */
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /*
+    A visible focus ring is not a design compromise. It is the thing that makes
+    the site usable by a chunk of people. Never remove it without a replacement.
+  */
+  :focus-visible {
+    outline: 2px solid var(--color-warmlight);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Hit targets are 44px on touch. Checked specifically on the mobile menu and the audio control. */
+  @media (pointer: coarse) {
+    a,
+    button,
+    [role="button"] {
+      min-height: 44px;
+    }
+  }
+
+  ::selection {
+    background-color: var(--color-warmlight);
+    color: var(--color-ink);
+  }
+}
+
+/*
+  The hero settles on load, once. Nothing else animates on scroll. When reduced
+  motion is set, the load sequence is skipped entirely and every element must
+  end in its correct final state rather than staying invisible.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+  The one orchestrated moment: the hero settles on load, once. Nothing else on
+  the site animates on scroll.
+
+  Fill mode "both" matters. It holds the final state after the animation ends,
+  which is what makes the reduced-motion override safe: that rule cuts the
+  duration to 0.01ms, so the element lands in its correct final state instantly
+  rather than staying invisible. That bug is common and it makes the site blank
+  for the people who most need it not to be.
+*/
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility settle {
+  animation: settle 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/*
+  Ambient specks in the hero. Light catching dust above a dance floor, not
+  Christmas lights.
+
+  Kept deliberately faint. The brand brief spends its boldness on the audio and
+  asks everything else to stay quiet, so these sit at the threshold of being
+  noticed and never compete with the headline.
+
+  The keyframes rest at a low opacity rather than at zero. Under
+  prefers-reduced-motion the global override cuts the duration to 0.01ms, which
+  lands every speck on its final frame instantly, so the effect degrades to a
+  still field of faint points rather than blinking once or vanishing.
+*/
+@keyframes twinkle {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-14px);
+  }
+}
+
+@utility speck {
+  position: absolute;
+  border-radius: 9999px;
+  animation: twinkle var(--twinkle-duration, 6s) ease-in-out var(--twinkle-delay, 0s)
+    infinite alternate both;
+}
+
+/*
+  Custom cursor: a sparkler.
+
+  A hot core with a tail of cooling embers, throwing off sparks as it moves.
+  Warm amber against the dark palette, the same light as the specks behind the
+  page and the uplighting the whole design is built on.
+
+  The `cursor-custom` class is added by JavaScript only after it has confirmed a
+  fine pointer and no reduced-motion preference. If the script never runs, or
+  someone is on a touch screen or has reduced motion on, the native cursor is
+  never hidden and nothing is lost.
+
+  Over a text field the native cursor comes back. The I-beam says text is
+  selectable and shows where the caret will land, and no styling is worth that.
+*/
+html.cursor-custom,
+html.cursor-custom *,
+html.cursor-custom *::before,
+html.cursor-custom *::after {
+  cursor: none;
+}
+
+html.cursor-custom.over-text,
+html.cursor-custom.over-text * {
+  cursor: auto;
+}
+
+.spark,
+.spark-particle {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  border-radius: 9999px;
+  will-change: transform, opacity;
+}
+
+.spark {
+  transition:
+    box-shadow 220ms ease-out,
+    opacity 220ms ease-out;
+}
+
+/*
+  Cursor colours live in variables so the sparkler can invert over a light
+  section. The amber and the white-hot tip disappear completely against the
+  paper pricing block, so over anything marked data-surface="light" the embers
+  become a burnt amber and the tip goes to ink. Same sparkler, cooled down.
+*/
+:root {
+  --spark-ember: var(--color-warmlight);
+  --spark-lead: var(--color-chalk);
+  --spark-glow: var(--color-warmlight);
+  --spark-hot: var(--color-chalk);
+}
+
+html.cursor-dark {
+  --spark-ember: color-mix(in oklab, var(--color-warmlight) 45%, var(--color-ink));
+  --spark-lead: var(--color-ink);
+  --spark-glow: color-mix(in oklab, var(--color-warmlight) 55%, var(--color-ink));
+  --spark-hot: var(--color-ink);
+}
+
+.spark {
+  background-color: var(--spark-ember);
+}
+
+/* The burning tip. Everything behind it is an ember cooling off. */
+.spark[data-lead="true"] {
+  background-color: var(--spark-lead);
+  box-shadow:
+    0 0 8px var(--spark-glow),
+    0 0 20px color-mix(in oklab, var(--spark-glow) 70%, transparent),
+    0 0 42px color-mix(in oklab, var(--spark-glow) 35%, transparent);
+}
+
+/* Over something clickable it burns hotter and throws more light. */
+html.cursor-hot .spark[data-lead="true"] {
+  box-shadow:
+    0 0 12px var(--spark-hot),
+    0 0 28px var(--spark-glow),
+    0 0 60px color-mix(in oklab, var(--spark-glow) 55%, transparent);
+}
+
+.spark[data-hidden="true"],
+.spark-particle[data-hidden="true"] {
+  opacity: 0 !important;
+}
+
+.spark-particle {
+  background-color: var(--spark-ember);
+  box-shadow: 0 0 6px color-mix(in oklab, var(--spark-glow) 80%, transparent);
+}
+
+
+/*
+  Hero picture mask.
+
+  Dissolves all four edges of the photograph into the blurred layer behind it,
+  so the frame has no boundary to see. Only applies from `lg` up, where the
+  picture is shown whole against the blur. Below that it is cropped edge to edge
+  and there is nothing to hide.
+*/
+@media (min-width: 64rem) {
+  .hero-frame {
+    --hero-mask-x: linear-gradient(
+      to right,
+      transparent 0%,
+      #000 16%,
+      #000 84%,
+      transparent 100%
+    );
+    --hero-mask-y: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 10%,
+      #000 82%,
+      transparent 100%
+    );
+    -webkit-mask-image: var(--hero-mask-x), var(--hero-mask-y);
+    mask-image: var(--hero-mask-x), var(--hero-mask-y);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+}
+
+
+/*
+  Number inputs.
+
+  The spinner arrows are useless on a guest count, which people type rather than
+  nudge one at a time, and they crowd a field that is already narrow.
+*/
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+/*
+  Full height photograph bleeds.
+
+  The picture runs off one edge of the viewport and the full height of its
+  section, so it is anchored to the page rather than sitting in the middle of it
+  as a floating rectangle. Its inner and bottom edges dissolve into the page so
+  there is no boundary where the photograph stops and the text column begins.
+
+  Two mirrored versions. Every gradient that fades towards the text column runs
+  the opposite way in the left hand one.
+*/
+@media (min-width: 64rem) {
+  .portrait-bleed-right {
+    --bleed-right-mask-x: linear-gradient(to right, transparent 0%, #000 52%);
+    /* Fades at the top as well, or the photograph starts on a hard horizontal
+       line directly under the header. */
+    --bleed-right-mask-y: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 30%,
+      #000 60%,
+      transparent 100%
+    );
+    -webkit-mask-image: var(--bleed-right-mask-x), var(--bleed-right-mask-y);
+    mask-image: var(--bleed-right-mask-x), var(--bleed-right-mask-y);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+
+  .portrait-bleed-left {
+    --bleed-left-mask-x: linear-gradient(to left, transparent 0%, #000 52%);
+    --bleed-left-mask-y: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 30%,
+      #000 60%,
+      transparent 100%
+    );
+    -webkit-mask-image: var(--bleed-left-mask-x), var(--bleed-left-mask-y);
+    mask-image: var(--bleed-left-mask-x), var(--bleed-left-mask-y);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+}
+
+
+/*
+  Photograph fade below `lg`.
+
+  From `lg` the wedding and about photographs are full height bleeds whose inner
+  edges dissolve into the page. Below that they drop to an inline block, and the
+  first two attempts at this both still read as a photograph in a frame rather
+  than part of the page. Two reasons, and both are fixed here rather than in the
+  mask alone:
+
+  1. Distance. A fade over a tenth of the height is a vignette. The desktop
+     bleed dissolves across half the picture, so this does the same vertically,
+     which is the axis a tall inline photograph has room in.
+  2. Tone. These are lit much brighter than the page, so alpha alone leaves a
+     bright block with soft corners. The `::after` washes the page colour over
+     the picture, hardest at the edges and with a flat film across all of it, so
+     the two are close in tone before the mask starts.
+
+  The side edges are handled in the markup instead, by bleeding the wrapper out
+  to the viewport edges. A picture that stops short of the screen has a frame
+  whatever you do to its corners.
+
+  Capped just under the `lg` breakpoint so it can never apply at the same time
+  as one of the bleeds above.
+*/
+@media (max-width: 63.9375rem) {
+  .photo-fade {
+    position: relative;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 27%,
+      #000 73%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 27%,
+      #000 73%,
+      transparent 100%
+    );
+  }
+
+  .photo-fade::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(
+        to bottom,
+        var(--color-ink) 0%,
+        color-mix(in oklab, var(--color-ink) 70%, transparent) 14%,
+        transparent 40%,
+        transparent 60%,
+        color-mix(in oklab, var(--color-ink) 70%, transparent) 86%,
+        var(--color-ink) 100%
+      ),
+      linear-gradient(
+        to right,
+        color-mix(in oklab, var(--color-ink) 55%, transparent) 0%,
+        transparent 18%,
+        transparent 82%,
+        color-mix(in oklab, var(--color-ink) 55%, transparent) 100%
+      ),
+      color-mix(in oklab, var(--color-ink) 18%, transparent);
+  }
+}
+
+
+/*
+  Soft edges.
+
+  A hairline fade on all four sides. Enough to stop a photograph ending on a
+  perfectly hard pixel edge, not enough to read as an effect. Shared by the
+  masonry tiles and the "What I actually do" photograph, so they stay matched.
+*/
+.soft-edges {
+  --soft-x: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 1.2%,
+    #000 98.8%,
+    transparent 100%
+  );
+  --soft-y: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 1%,
+    #000 99%,
+    transparent 100%
+  );
+  -webkit-mask-image: var(--soft-x), var(--soft-y);
+  mask-image: var(--soft-x), var(--soft-y);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+
+/*
+  Hide the scrollbar on the phone-only horizontal rails. The cards are cut off
+  at the edge of the screen, which is the affordance that says "swipe"; a bar
+  underneath adds nothing and eats vertical space. Scrolling itself is
+  untouched, including with a keyboard.
+*/
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
