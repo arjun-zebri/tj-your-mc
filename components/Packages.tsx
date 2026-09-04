@@ -3,19 +3,22 @@ import Link from "next/link";
 import { HandoverMark, SpanFullDayMark, SpanMusicMark, SpanReceptionMark, TickMark } from "@/components/icons";
 import { Placeholder } from "@/components/Placeholder";
 import {
+  customPackage,
+  outsideSydney,
   packages,
   packagesFramingLine,
   packagesValueLine,
+  paymentTerms,
   pricingUpdated,
+  pricingYear,
   visibleInclusions,
   type Package,
 } from "@/content/packages";
-import { site } from "@/content/site";
 
 const MARKS = {
-  reception: SpanReceptionMark,
-  fullDay: SpanFullDayMark,
-  music: SpanMusicMark,
+  vibe: SpanReceptionMark,
+  show: SpanMusicMark,
+  wingman: SpanFullDayMark,
 } as const;
 
 const currency = new Intl.NumberFormat("en-AU", {
@@ -35,9 +38,13 @@ const longDate = new Intl.DateTimeFormat("en-AU", {
  * does more for hierarchy than any heading size.
  *
  * Cards are used here and nowhere else, because the tiers are a genuinely
- * discrete repeated unit. The tiers carry different amounts of confirmed
- * detail, so the card is a flex column with the price pinned to the bottom.
- * That keeps the three bottom edges aligned however uneven the content is.
+ * discrete repeated unit. The tiers carry different amounts of detail, so the
+ * card is a flex column with the price pinned to the bottom. That keeps the
+ * three bottom edges aligned however uneven the content is.
+ *
+ * The custom package and the terms sit below the rail rather than in it. A
+ * fourth card with no number in it reads as a card that failed to load, and
+ * four across is a worse grid than three on every screen we care about.
  */
 export function Packages() {
   return (
@@ -72,6 +79,18 @@ export function Packages() {
               <PackageCard tier={tier} />
             </div>
           ))}
+        </div>
+
+        <CustomPackage />
+
+        {/*
+          Travel and the booking fee are the two things that change what someone
+          actually pays, so they sit with the prices rather than three sections
+          away. Two columns from `sm` keeps them subordinate to the cards.
+        */}
+        <div className="mt-14 grid gap-10 border-t border-ink/10 pt-10 sm:grid-cols-2 sm:gap-12">
+          <Terms heading={outsideSydney.heading} lines={outsideSydney.lines} />
+          <Terms heading={paymentTerms.heading} lines={paymentTerms.lines} />
         </div>
 
         <PricingUpdated />
@@ -112,35 +131,40 @@ function PackageCard({ tier }: { tier: Package }) {
 
       {/* mt-auto pins the price to the bottom so the three cards line up. */}
       <div className="mt-auto pt-8">
-        <Price tier={tier} />
+        <p className="font-[family-name:var(--font-display)] text-3xl font-semibold">
+          {currency.format(tier.price)}
+        </p>
       </div>
     </div>
   );
 }
 
-function Price({ tier }: { tier: Package }) {
-  if (tier.price !== null) {
-    return (
-      <p className="font-[family-name:var(--font-display)] text-3xl font-semibold">
-        {tier.isFrom && <span className="text-lg font-normal text-ink/60">From </span>}
-        {currency.format(tier.price)}
-      </p>
-    );
-  }
-
+/**
+ * The fourth thing on TJ's pricelist. Deliberately not a card: it has no number,
+ * and an empty price slot next to three filled ones reads as broken rather than
+ * as an invitation.
+ */
+function CustomPackage() {
   return (
-    <>
-      {/* Dev only. A fabricated price cannot reach the live site. */}
-      <Placeholder label="NEEDS TJ: price" className="px-4 pt-7 pb-3">
-        <p className="font-[family-name:var(--font-display)] text-3xl font-semibold text-ink/40">
-          <span className="text-lg font-normal">From </span>$0,000
-        </p>
-      </Placeholder>
+    <div className="mt-10 max-w-measure">
+      <h3 className="font-[family-name:var(--font-display)] text-xl font-semibold">
+        {customPackage.name}
+      </h3>
+      <p className="mt-2 text-ink/70">{customPackage.summary}</p>
+    </div>
+  );
+}
 
-      <p className="border-t border-ink/10 pt-4 text-ink/60 print:hidden">
-        Quoted for your night
-      </p>
-    </>
+function Terms({ heading, lines }: { heading: string; lines: string[] }) {
+  return (
+    <div>
+      <h3 className="font-medium">{heading}</h3>
+      <ul className="mt-3 flex flex-col gap-2 text-ink/70">
+        {lines.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -164,12 +188,12 @@ function PricingUpdated() {
   }
 
   return (
-    <p className="mt-8 text-sm text-ink/55">
-      Prices last reviewed{" "}
+    <p className="mt-10 text-sm text-ink/55">
+      These are the {pricingYear} prices, last reviewed{" "}
       <time dateTime={pricingUpdated}>
         {longDate.format(new Date(pricingUpdated))}
       </time>
-      . {site.businessName} quotes per event, so ask for a figure against your date.
+      . Send me your date and I will confirm the figure against it.
     </p>
   );
 }

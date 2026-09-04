@@ -22,8 +22,8 @@ quality signals.
 If the script embed cannot be styled to match, build a native form on this site
 that posts to Zebri rather than shipping a mismatched iframe.
 
-`[NEEDS ARJUN: confirm the script embed supports full CSS inheritance, or expose
-the field endpoint so we can build native.]`
+Settled on 4 September 2026. The form is native and posts to Zebri's lead
+capture API. Do not replace it with an embed.
 
 ## Fields
 
@@ -53,13 +53,56 @@ the Zebri record is immediately useful.
 ## Mapping to Zebri
 
 Map every field to the matching Zebri lead field rather than dumping into notes,
-or the downstream automations cannot fire. Confirm the field keys against TJ's
-actual account before wiring, do not assume defaults.
+or the downstream automations cannot fire.
 
-Set the lead source so TJ can tell website enquiries from Instagram DMs. Use a
-consistent value and record it here once set.
+Both forms post to `https://app.zebri.com.au/api/lead/submit` from the server,
+never from the browser. A server post sends no `Origin` header, so it needs
+nothing on Zebri's Allowed domains list and cannot break on a preview deployment
+or when the domain changes. The keys and the wiring live in `content/zebri.ts`
+and `lib/zebri.ts`. API reference:
+`https://app.zebri.com.au/docs/lead-capture-api`.
 
-`[NEEDS ARJUN: field keys and the lead source value from TJ's Zebri account.]`
+The keys below were read from `GET /api/lead/config` against TJ's account on
+4 September 2026. Re-read that endpoint before assuming they still hold, because
+TJ can change his form in Zebri.
+
+| Our field    | Zebri key         |
+| ------------ | ----------------- |
+| `name`       | `name`            |
+| `email`      | `email`           |
+| `eventDate`  | `wedding_date`    |
+| `venue`      | `venue`           |
+| `phone`      | `phone`           |
+| `message`    | `message`         |
+| `guestCount` | none, see below   |
+
+TJ's form has no guest count field and no custom fields, so the guest count is
+appended to the message as a labelled line rather than dropped. Add the key the
+day he adds the field.
+
+The lead source rides in `referral_source`, which is the only free text field
+Zebri offers besides the message and which the site does not otherwise ask for.
+`Website enquiry form` from `/contact`, `Website date check, homepage` from the
+homepage. If TJ ever wants the couple's own answer in that field, ask the
+question on the form and move the source into a Zebri custom field.
+
+### The two spam fields
+
+Every request carries `hp` and `rendered_at`, and neither is optional.
+
+`hp` is a honeypot input named `company_website` that no person sees or reaches.
+Anything in it means a bot, and Zebri drops the lead.
+
+`rendered_at` is `Date.now()` from the moment the visitor's form mounted, and it
+has to be the browser's own value passed straight through. Stamp a fresh one on
+the server and every lead lands inside Zebri's two second speed trap, where a
+suspected bot gets a `200` and is never stored. Every enquiry would look sent and
+none would arrive. It is held in `components/form/SpamGuard.tsx`, outside the
+form element, so a failed attempt does not reset it.
+
+To test a change without putting a fake couple in TJ's pipeline, post with `hp`
+filled. Validation runs before the honeypot check, so a bad payload still comes
+back as a `400` while a good one returns `200` and stores nothing.
 
 ## Placement
 

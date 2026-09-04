@@ -50,7 +50,7 @@ components, and so a future CMS migration is a data move rather than a rewrite.
 ```
 content/
   site.ts          name, email, service area, social links, the entity strings
-  packages.ts      the three tiers
+  packages.ts      TJ's packages, prices, travel and payment terms
   faqs.ts          question and answer pairs, consumed by both the page and FAQPage schema
   testimonials.ts  the four inherited quotes, verbatim, with a source field
   gallery.ts       image records mirroring .claude/docs/05-assets.md

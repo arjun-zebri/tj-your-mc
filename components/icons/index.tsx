@@ -128,13 +128,13 @@ export function InstagramMark({ className }: IconProps) {
 }
 
 /*
-  Tier markers. Three brackets showing how much of the day each package covers,
-  drawn as the span you would pen down the side of a run sheet. They read as
-  increasing scope at a glance, which is the only reason the tiers get icons at
-  all.
+  Tier markers. Three brackets drawn as the span you would pen down the side of
+  a run sheet, widening across the three packages. They read as increasing scope
+  at a glance, which is the only reason the tiers get icons at all. The mapping
+  from package to mark is in components/Packages.tsx.
 */
 
-/** Reception only. A bracket over the back half of the day. */
+/** A bracket over the back half of the line. The narrowest of the three. */
 export function SpanReceptionMark({ className }: IconProps) {
   return (
     <Mark className={className}>
@@ -146,7 +146,7 @@ export function SpanReceptionMark({ className }: IconProps) {
   );
 }
 
-/** Full day. The bracket spans the whole line. */
+/** The bracket spans the whole line. The widest of the three. */
 export function SpanFullDayMark({ className }: IconProps) {
   return (
     <Mark className={className}>
@@ -158,7 +158,7 @@ export function SpanFullDayMark({ className }: IconProps) {
   );
 }
 
-/** Full day plus live music. The full span with a note against it. */
+/** A part span with a note against it, for the tier that adds songs. */
 export function SpanMusicMark({ className }: IconProps) {
   return (
     <Mark className={className}>

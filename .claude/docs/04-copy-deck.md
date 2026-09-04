@@ -59,40 +59,68 @@ They are the most human thing on the entire old site.
 
 ### Packages
 
-Placeholders. Flagged clearly as needing real inclusions and prices before
-launch. Do not publish `Offer` schema until the numbers are real.
+TJ's own, from "2027 TJ Your MC pricelist 2027.pdf", supplied 4 September 2026.
+The three guessed tiers that used to sit here, reception and full day and full
+day plus live music, were wrong in structure as well as in price. Live copy is in
+`content/packages.ts`. Do not add an inclusion that is not on TJ's pricelist.
 
 Framing line:
 
-> Every wedding runs differently, so treat these as starting points. Tell me what
-> your night looks like and I will tell you what it costs.
+> These are my packages for 2027 weddings. Each price is the whole package, not
+> an hourly rate, and it covers the planning beforehand as much as the night
+> itself.
 
-**Reception**
-For couples who have the ceremony sorted and need the reception run properly.
+**The Vibe, $3,000**
+You have your run sheet sorted. I run the night off it and stay to lift the floor.
 
-- Planning call and run sheet
-- Hosting from guest arrival to last dance
-- Coordination with your venue, photographer and DJ
-- `[NEEDS TJ: hours covered]`
-- `[NEEDS TJ: price]`
+- A first Zoom call so we meet properly
+- A second Zoom call to plan the day
+- I work off your run sheet
+- One song from me on the night
+- I stay for the dance floor and keep it going
 
-**Full day**
-Ceremony through to the end of the night.
+**The Show, $4,500**
+More planning between us, and more singing from me.
 
-- Everything in Reception
-- On site from the ceremony onward
-- `[NEEDS TJ: what does he actually do at the ceremony, given he is not the
-celebrant? Announcements, guest wrangling, transitions?]`
-- `[NEEDS TJ: price]`
+- Everything in The Vibe
+- Up to three Zoom meetings
+- I help design your run sheet for the night
+- Up to three songs, where I judge they will land
 
-**Full day plus live music**
+**The Wingman, $5,400**
+The most involved version. You get me across the planning and across the whole night.
 
-- Everything in Full day
-- `[NEEDS TJ: how many songs, at what points in the night, acoustic or backing?]`
-- `[NEEDS TJ: price]`
+- Everything in The Vibe and The Show
+- Up to five Zoom meetings for anything that comes up
+- I help design your run sheet with my experience behind it
+- Your love story told as the introduction of the night
+- Games for your guests, if you want them
 
-`[NEEDS TJ: are these the right three tiers? This is our best guess at a standard
-MC structure and he should overrule it.]`
+**Custom package**
+Every love story is different. If none of these fit yours, tell me what the night
+looks like and I will build the package around it and price it from there.
+
+**If your wedding is outside Sydney**
+
+- Flights and accommodation, meals and getting around are quoted on top of the
+  package.
+- We agree all of it before anything is booked, so there is nothing to find out
+  later.
+
+**How paying for it works**
+
+- A booking fee of 30% holds your date. It is not refundable, and paying it is
+  how we both agree to the terms.
+- The remaining 70% is settled three weeks before the wedding.
+- For weddings outside Sydney the travel is settled up front alongside the
+  booking fee.
+
+TJ's pricelist also says what happens if the balance is late. That belongs in the
+quote and the contract, not on a page someone is reading on their phone at eleven
+at night, so it is not on the site.
+
+`[NEEDS TJ: the pricelist covers 2027. Do these prices hold for a date left in
+2026, or is there a separate 2026 rate?]`
 
 ### FAQ
 
@@ -130,7 +158,13 @@ better one than we would write.]`
 
 **How much does a wedding MC cost in Sydney?**
 
-> `[NEEDS TJ: blocked on pricing.]`
+> My 2027 packages are $3,000 for The Vibe, $4,500 for The Show and $5,400 for
+> The Wingman. Each price is the whole package, not an hourly rate, and it covers
+> the planning calls beforehand as well as the night itself. Weddings outside
+> Sydney are quoted on top for travel.
+
+Built from `content/packages.ts` rather than typed into `content/faqs.ts`, so the
+figures cannot drift from the pricing section or from `/llms.txt`.
 
 ### Testimonials
 

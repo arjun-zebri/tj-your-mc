@@ -11,6 +11,7 @@
 
 import { absoluteUrl, site } from "@/content/site";
 import { readyFaqs } from "@/content/faqs";
+import { hasPublishablePricing, packages } from "@/content/packages";
 
 export const ids = {
   website: `${site.url}/#website`,
@@ -95,10 +96,27 @@ export function serviceSchema(input: {
       "@type": "Audience",
       audienceType: input.audience,
     },
-    // No "offers" key. The prices currently on the site are placeholders, and
-    // `hasPlaceholderPricing` in content/packages.ts gates this. Displaying a
-    // wrong price is recoverable. Handing one to Google as structured data puts
-    // it into results and rich snippets, where it outlives the fix.
+    /*
+      One Offer per package, and only while `hasPublishablePricing` is true.
+      Every price here is a flat fee that a visitor can read off the pricing
+      section, which is the rule: schema must never state a number the page
+      does not. Put an unconfirmed price back in content/packages.ts and this
+      disappears with it, because a wrong price handed to Google goes into
+      results and rich snippets and outlives the fix.
+    */
+    ...(hasPublishablePricing
+      ? {
+          offers: packages.map((tier) => ({
+            "@type": "Offer",
+            name: tier.name,
+            description: tier.summary,
+            price: String(tier.price),
+            priceCurrency: "AUD",
+            availability: "https://schema.org/InStock",
+            url: absoluteUrl("/contact"),
+          })),
+        }
+      : {}),
   };
 }
 

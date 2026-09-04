@@ -22,6 +22,14 @@ export type EnquiryState = {
    * about as effectively as failing silently does.
    */
   values: Partial<Record<EnquiryField, string>>;
+  /**
+   * Whether to offer the mailto fallback under the error summary.
+   *
+   * True when the send itself failed, false when the person can fix it by
+   * editing a field. An enquiry that errors silently is a booking TJ never
+   * knew about, so anything we cannot recover from hands them his address.
+   */
+  offerEmail: boolean;
   /** Bumped on every failed attempt and used as the form key, so the fields remount carrying `values`. */
   attempt: number;
 };
@@ -32,4 +40,5 @@ export const initialEnquiryState: EnquiryState = {
   formError: "",
   values: {},
   attempt: 0,
+  offerEmail: false,
 };

@@ -10,39 +10,81 @@
  * and colours and is visible to search engines. See
  * .claude/skills/zebri-embed/SKILL.md for why an iframe was rejected.
  *
- * [NEEDS ARJUN: the field keys and the lead source value from TJ's Zebri
- * account. Map every field to its matching Zebri lead field rather than dumping
- * into notes, or the downstream automations cannot fire.]
+ * We post from the server, not the browser. A server post carries no Origin
+ * header, so it needs nothing on Zebri's Allowed domains list and keeps working
+ * on preview deployments and any future domain. See lib/zebri.ts.
+ *
+ * API reference: https://app.zebri.com.au/docs/lead-capture-api
  */
 
+/** Zebri's lead capture endpoint. Public, no authentication. */
+export const zebriEndpoint = "https://app.zebri.com.au/api/lead/submit";
+
 /**
- * Our field name on the left, TJ's Zebri lead field key on the right.
- * Replace each placeholder with the real key. Nothing else needs to change.
+ * TJ's form token, from Settings, Lead Capture, API access in Zebri.
+ *
+ * Public by design: it appears in every embed snippet Zebri hands out, so it is
+ * safe in this repo and safe in front end code. It identifies the form, it does
+ * not authorise anything. An env override is read first so a fork or a staging
+ * account can point somewhere else without a code change.
+ */
+export const zebriFormToken =
+  process.env.ZEBRI_FORM_TOKEN ?? "59aa4198-06e5-4c2d-a9bc-6a8dc6df6ebf";
+
+/**
+ * Our field name on the left, Zebri's payload key on the right, confirmed
+ * against TJ's account with GET /api/lead/config on 4 September 2026.
+ *
+ * Mapped field by field on purpose. Dumping into a notes blob means the
+ * downstream automations in TJ's pipeline cannot fire.
+ *
+ * `guestCount` is deliberately absent. TJ's form config has no guest count
+ * field and no custom fields, so the answer is appended to the message as a
+ * labelled line rather than silently dropped. Add the key here the day TJ adds
+ * the field in Zebri.
  */
 export const zebriFieldMap = {
-  name: "[NEEDS ARJUN: name key]",
-  email: "[NEEDS ARJUN: email key]",
-  eventDate: "[NEEDS ARJUN: event date key]",
-  venue: "[NEEDS ARJUN: venue key]",
-  phone: "[NEEDS ARJUN: phone key]",
-  guestCount: "[NEEDS ARJUN: guest count key]",
-  message: "[NEEDS ARJUN: message key]",
+  name: "name",
+  email: "email",
+  eventDate: "wedding_date",
+  venue: "venue",
+  phone: "phone",
+  message: "message",
 } as const;
 
-export type EnquiryField = keyof typeof zebriFieldMap;
+/** Zebri's own limits, enforced before we post so a long answer never 400s. */
+export const zebriMaxLength = {
+  name: 120,
+  email: 200,
+  phone: 40,
+  eventDate: 10,
+  venue: 200,
+  message: 2000,
+  referralSource: 200,
+} as const;
+
+/** Every field the enquiry form collects, including the one Zebri has no key for. */
+export type EnquiryField = keyof typeof zebriFieldMap | "guestCount";
 
 /**
- * Two entry points, one pipeline. Distinct source values so we can measure which
+ * Two entry points, one pipeline. Distinct values so we can measure which
  * converts better, per the placement rules in the skill.
+ *
+ * These ride in `referral_source`, which is the only free text field Zebri
+ * offers besides the message. The site does not ask couples how they found TJ,
+ * so the field is otherwise empty. If TJ ever wants the couple's own answer
+ * there, add the question to the form and move these values into a Zebri custom
+ * field instead.
  */
 export const leadSources = {
-  contactPage: "tj-website-contact",
-  homepageDateCheck: "tj-website-date-check",
+  contactPage: "Website enquiry form",
+  homepageDateCheck: "Website date check, homepage",
 } as const;
 
 export type LeadSource = (typeof leadSources)[keyof typeof leadSources];
 
-/** True once the placeholders above have been replaced with real keys. */
-export function fieldKeysConfigured(): boolean {
-  return Object.values(zebriFieldMap).every((key) => !key.startsWith("[NEEDS"));
-}
+/** The hidden input a person never sees. Zebri rejects the lead if it is filled. */
+export const honeypotField = "company_website";
+
+/** The hidden input carrying the moment the form mounted in the visitor's browser. */
+export const renderedAtField = "renderedAt";

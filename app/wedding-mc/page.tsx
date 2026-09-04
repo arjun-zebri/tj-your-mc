@@ -185,9 +185,11 @@ export default function WeddingMcPage() {
 
         Deliberately not styled like the running order above it. Two numbered
         lists on one page reads as a template, so this one is a plain sequence
-        with the step name inline. What confirms a booking, the deposit and the
-        contract are all still open with TJ, so there is no step between the
-        call and the run sheet. See .claude/docs/06-decisions.md.
+        with the step name inline.
+
+        The booking fee step came off TJ's 2027 pricelist. The percentages are
+        his and are stated once here and once in content/packages.ts, which is
+        one copy too many. If a third appears, read them from that file.
       */}
       <section aria-labelledby="booking" className="relative overflow-hidden">
         {bookingImage && (
@@ -229,6 +231,12 @@ export default function WeddingMcPage() {
                   about the night, who is speaking and which part of it you are quietly worried
                   about. I tell you how I would run it, and you are under no obligation at the
                   end of it.
+                </li>
+                <li>
+                  <span className="font-medium text-chalk">You pick a package and I hold the date.</span>{" "}
+                  A booking fee of 30% confirms it, and the remaining 70% is
+                  settled three weeks before the wedding. If your wedding is outside Sydney we
+                  agree the travel before any of it is booked.
                 </li>
                 <li>
                   <span className="font-medium text-chalk">I help you with the run sheet.</span>{" "}

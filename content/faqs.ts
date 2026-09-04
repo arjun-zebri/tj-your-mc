@@ -9,6 +9,18 @@
  * .claude/skills/local-seo-pages/references/aeo-writing.md
  */
 
+import { hasPublishablePricing, packages, pricingYear } from "@/content/packages";
+
+/**
+ * "$3,000 for The Vibe, $4,500 for The Show and $5,400 for The Wingman", in the
+ * order the tiers appear on the pricing section.
+ */
+const priceList = packages
+  .map((tier) => `$${tier.price.toLocaleString("en-AU")} for ${tier.name}`)
+  .reduce((sentence, part, index, all) =>
+    index === all.length - 1 ? `${sentence} and ${part}` : `${sentence}, ${part}`,
+  );
+
 export type Faq = {
   question: string;
   /** Plain text. Kept free of markup so it can go straight into JSON-LD. */
@@ -69,9 +81,16 @@ export const faqs: Faq[] = [
   },
   {
     question: "How much does a wedding MC cost in Sydney?",
-    // [NEEDS TJ: blocked on pricing.]
-    answer: "",
-    ready: false,
+    /*
+      Built from content/packages.ts rather than typed out, for the same reason
+      the schema is built from this file: two hand kept copies of a price drift,
+      and this one is quoted by answer engines. It also unpublishes itself if
+      anyone puts an unconfirmed number back in the packages file.
+    */
+    answer: hasPublishablePricing
+      ? `My ${pricingYear} packages are ${priceList}. Each price is the whole package, not an hourly rate, and it covers the planning calls beforehand as well as the night itself. Weddings outside Sydney are quoted on top for travel.`
+      : "",
+    ready: hasPublishablePricing,
   },
 ];
 

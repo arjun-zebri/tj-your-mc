@@ -34,6 +34,11 @@ this table when you do.
 | `/wedding-mc` is one dark page with the photograph bleeding off the left edge, and carries no FAQ                        | Arjun's instruction. The light `bg-paper` band under the running order is gone, and the FAQ block went with it, so the page also emits no `FAQPage` schema. The same questions still render and emit schema on the homepage. | Arjun wants the FAQ back on the service page |
 | A "How booking me works" section on `/wedding-mc`, and the money reframed above the tiers as what the night costs rather than what an MC costs | Arjun sent a competitor page as a feel reference. The site explained the night in detail and never explained what sending the form starts, and the tiers read as an hourly rate for someone holding a microphone. Nothing new was invented: the free-first-call and deposit claims that page makes are the two things we cannot match. | TJ gives us his actual booking terms, which turns the placeholder step into real copy |
 | TJ helps with the run sheet, he does not own it                                                                          | Arjun: TJ does not want full responsibility for it. Every place the site said he writes it now says he helps get it right and that it stays the couple's, including the FAQ answer, the package inclusion, `llms.txt` and the `Service` schema description. He still distributes it, which is coordination rather than authorship. | TJ says he is happy to own it outright |
+| Packages, prices and terms come from TJ's 2027 pricelist, published as flat fees | TJ supplied "2027 TJ Your MC pricelist 2027.pdf" on 4 September 2026. The three placeholder tiers, their invented inclusions and their benchmarked prices are gone, replaced by The Vibe, The Show and The Wingman at $3,000, $4,500 and $5,400, plus the custom package. Prices are flat, not "from", so `Offer` schema and prices in `/llms.txt` are both unblocked. | TJ issues a new pricelist, which is the only thing that should ever change these numbers |
+| Both forms post to Zebri from the server, not the browser | A server post carries no `Origin` header, so it needs nothing on Zebri's Allowed domains list and cannot break on a preview deployment or a domain change. A browser post that is rate limited or hits an unknown token surfaces as an unreadable CORS error, which would show a real person the wrong thing. | Zebri exposes something the browser can do and the server cannot |
+| The lead source rides in `referral_source` | The API has no source field, and it is the only free text field besides the message. The site does not ask couples how they found TJ, so it is otherwise empty. It carries "Website enquiry form" or "Website date check, homepage" so the two entry points can be measured against each other. | TJ wants the couple's own answer there, which means adding the question to the form and moving the source into a Zebri custom field |
+| Guest count is appended to the message, not mapped | TJ's Zebri form has no guest count field and no custom fields configured. A labelled line at the end of the message keeps the answer rather than dropping it. Everything else is mapped field by field, so the pipeline automations still fire. | TJ adds a guest count field in Zebri, then add the key to `zebriFieldMap` |
+| The form token sits in `content/zebri.ts`, not an env var | Zebri's token is public by design and appears in every embed snippet they hand out. It identifies the form, it does not authorise anything. A maintainer picking this up cold can see what the form points at. An env override is read first for a staging account. | Zebri ever makes the token a secret |
 
 ## Assumptions made without an answer
 
@@ -44,9 +49,10 @@ the signature element with a photo fallback. A sixty second phone clip of TJ on
 the mic would be worth more to this site than another five thousand dollars of
 design.
 
-**Packages.** Three placeholder tiers on a standard MC structure: reception only,
-full day, full day plus live music. A guess. TJ almost certainly sells it
-differently.
+**Packages.** Resolved on 4 September 2026. TJ sent his 2027 pricelist, so the
+tiers, inclusions, prices, travel and payment terms are all his. The guess this
+paragraph used to describe, reception only and full day and full day plus live
+music, was wrong in structure as well as in price.
 
 ## LAUNCH BLOCKER: fabricated content is currently live in the build
 
@@ -61,7 +67,6 @@ it came from TJ and none of it may reach the live domain.**
 | File                      | Fabricated                                                   | Live?                          |
 | ------------------------- | ------------------------------------------------------------- | ------------------------------ |
 | `content/site.ts`         | `weddingsHosted` "Over 200", `hostingSince` "2016"           | Yes, showing in the hero       |
-| `content/packages.ts`     | All three prices, all inclusions, and `pricingUpdated`        | Yes, showing on the pricing section |
 | `content/testimonials.ts` | All 52 quotes, the couple names, the supplier names, the venues | Yes, showing on the homepage |
 
 The section was removed on 1 September 2026 and restored the same day on Arjun's
@@ -84,25 +89,25 @@ No `Review` or `AggregateRating` schema is emitted while
 `hasPlaceholderTestimonials` is true. Marking up invented reviews is what earns
 a Google manual action, and that is a separate risk from displaying them.
 
-Prices were faked on a later instruction. From $1,200, $1,950 and $2,900,
-benchmarked against the Sydney wedding MC market so they look plausible, which
-makes them convincing and still wrong. The inclusions are our reconstruction of
-what a working MC delivers, not TJ's actual scope.
+Pricing is off this list as of 4 September 2026. TJ sent his 2027 pricelist and
+`content/packages.ts` now holds his packages, his inclusions, his prices, his
+travel terms and his payment terms, with the source named at the top of the file.
+The faked "from $1,200, $1,950 and $2,900" and the reconstructed inclusions are
+gone. The testimonials and the hero numbers are still invented and still live.
 
-Two guards remain, and both should stay until the prices are real:
+Both pricing guards released with it, and both are still wired to
+`hasPlaceholderPricing` in `content/packages.ts`:
 
-- **No `Offer` schema.** Gated by `hasPlaceholderPricing` in
-  `content/packages.ts`. A displayed price can be corrected in a deploy. A price
-  handed to Google as structured data goes into results and rich snippets and
-  outlives the fix.
-- **No prices in `/llms.txt`.** That file exists to be read and quoted by answer
-  engines, so it is the last place an invented number belongs. It says pricing is
-  quoted per event until `hasPublishablePricing` is true.
+- **`Offer` schema** now ships on `/wedding-mc`, one `Offer` per package, each
+  price the same flat figure a visitor reads on the page.
+- **`/llms.txt`** now states the prices, the travel terms and the booking fee.
 
-Watch the "Full day" inclusion about the ceremony. It is worded as guest
-direction alongside the celebrant, deliberately, because TJ is not a celebrant
-and must never be described as running the ceremony. Any rewrite of that line
-needs the same care.
+Set `hasPlaceholderPricing` back to `true` the moment anyone puts an unconfirmed
+number in that file and both guards close again, along with the cost FAQ, which
+builds its answer from the same array.
+
+Nothing in the packages describes TJ running the ceremony, and nothing added to
+them ever should. He is not a celebrant.
 
 ## `[NEEDS TJ]` markers currently in the code
 
@@ -119,8 +124,8 @@ listed here. These are all of them. Each one is a fact we will not invent.
 | `content/media.ts`        | Hero and portrait images                                        | The hero runs on type alone and the about page has no photo.      |
 | `content/gallery.ts`      | Every gallery image                                             | The gallery is empty and says so.                                 |
 | `content/testimonials.ts` | The four quotes, transcribed verbatim                           | No testimonials render anywhere.                                  |
-| `content/packages.ts`     | Hours, ceremony scope, song count, and all three prices         | Tiers show only partial inclusions and no prices.                 |
-| `content/faqs.ts`         | Three answers: DJs, lead time, cost                             | Three of the six FAQs do not render and emit no schema.           |
+| `content/packages.ts`     | Whether the 2027 prices hold for a date left in 2026            | Nothing visible. The page and `/llms.txt` both say 2027.          |
+| `content/faqs.ts`         | Two answers: DJs, lead time                                     | Two of the six FAQs do not render and emit no schema. The cost answer is now built from `content/packages.ts`. |
 
 The single highest value thing TJ can send is a phone recording of himself on
 the mic. It unblocks the signature element of the design.
@@ -135,10 +140,12 @@ Send one message with all of these. Ten minute reply, unblocks most of the copy.
 2. How much does he want his background to be part of the brand? Broad Sydney MC,
    or known for a particular community?
 3. Roughly how many weddings a year, and since when?
-4. What does he charge, and what is in each package?
-5. What confirms a booking? Deposit, contract, how much and when. "How booking
-   me works" on `/wedding-mc` currently jumps from the call to the run sheet
-   because we cannot answer this.
+4. Answered by the 2027 pricelist on 4 September 2026. One thing left on it: do
+   those prices hold for a date still in 2026, or is there a separate rate?
+5. Answered in part by the same pricelist. The booking fee, the balance and when
+   each is due are now the middle step of "How booking me works" on
+   `/wedding-mc`. Still open: is there a contract, and does he want the rest of
+   his payment terms, the ones about a late balance, said anywhere public?
 6. Original photo files plus photographer names. See `05-assets.md`.
 7. Any audio or video of him on the mic.
 8. Does he want a phone number on the site?
@@ -154,10 +161,13 @@ more out of him, and the transcript feeds straight into the copy.
 ## Blocked on Arjun
 
 1. Resolved. A native form was built rather than the embed. See the decision log.
-2. The Zebri lead endpoint, API key and field keys from TJ's account. The form is
-   complete and waiting on them: fill in `content/zebri.ts` and set
-   `ZEBRI_LEAD_ENDPOINT` and `ZEBRI_API_KEY`. Until then every submission returns
-   the error state with the mailto fallback, so no enquiry is silently lost.
+2. Resolved on 4 September 2026. Both forms post into TJ's pipeline through the
+   Zebri lead capture API, with the field keys confirmed against his account.
+   Nothing is left to fill in and no environment variable is needed. Two things
+   still need a person: send one real test enquiry from the live domain and
+   confirm the record lands with every field in the right place, and confirm
+   with TJ that `referral_source` is free for us to use as the lead source. See
+   the decision log.
 3. Sign off on allowing AI crawlers in `robots.txt`.
 4. Crawl the old site and export twelve months of Search Console data before
    cutover.
