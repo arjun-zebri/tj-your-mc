@@ -11,11 +11,10 @@ import {
  * professional proof, and for an MC they are arguably worth more, because a
  * venue recommending you is a referral channel rather than a compliment.
  *
- * No Review or AggregateRating schema is emitted from this section while any
- * entry is a placeholder. The decision is logged in
- * .claude/docs/06-decisions.md: marking up invented reviews is what earns a
- * Google manual action. The stars people expect next to a testimonial belong on
- * TJ's Google Business Profile, not here.
+ * No Review or AggregateRating schema is emitted from this section. The quotes
+ * are copied from TJ's Google profile, and marking up reviews taken from a
+ * third party's platform is against Google's review snippet guidelines. The
+ * decision is logged in .claude/docs/06-decisions.md.
  */
 export function WallOfLove() {
   const groups = testimonialGroups

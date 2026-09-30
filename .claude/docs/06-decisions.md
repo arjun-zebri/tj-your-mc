@@ -67,33 +67,27 @@ it came from TJ and none of it may reach the live domain.**
 | File                      | Fabricated                                                   | Live?                          |
 | ------------------------- | ------------------------------------------------------------- | ------------------------------ |
 | `content/site.ts`         | `weddingsHosted` "Over 200", `hostingSince` "2016"           | Yes, showing in the hero       |
-| `content/testimonials.ts` | All 52 quotes, the couple names, the supplier names, the venues | Yes, showing on the homepage |
 
-The section was removed on 1 September 2026 and restored the same day on Arjun's
-instruction. Arjun is collecting real quotes from TJ to replace them. Until then
-all 52 are invented and rendering live.
+Testimonials are off this list as of 30 September 2026. On Arjun's
+instruction every invented quote, couple and supplier alike, was removed, along
+with the invented venue names that came with them. The wall now shows only six
+real reviews from TJ's Google Business Profile, each badged as a Google review.
 
-Find every one of them with:
+Find anything invented that is still left with:
 
 ```bash
 grep -rn 'PLACEHOLDER DATA' content/
-grep -rn 'source: "placeholder"' content/
 ```
 
-Two things to check before launch, not one. The quotes are invented, and so is
-the implication that TJ has worked at Curzon Hall, Ottimo House, Gunners
-Barracks, Sergeants Mess and Doltone House. Naming a real venue is a claim about
-where he has worked, and those venues can read the site.
-
-No `Review` or `AggregateRating` schema is emitted while
-`hasPlaceholderTestimonials` is true. Marking up invented reviews is what earns
-a Google manual action, and that is a separate risk from displaying them.
+No `Review` or `AggregateRating` schema is emitted for the wall. The quotes are
+real now, but they are copied from Google, and marking up reviews taken from a
+third party's platform is against Google's review snippet guidelines.
 
 Pricing is off this list as of 4 September 2026. TJ sent his 2027 pricelist and
 `content/packages.ts` now holds his packages, his inclusions, his prices, his
 travel terms and his payment terms, with the source named at the top of the file.
 The faked "from $1,200, $1,950 and $2,900" and the reconstructed inclusions are
-gone. The testimonials and the hero numbers are still invented and still live.
+gone. The hero numbers are still invented and still live.
 
 Both pricing guards released with it, and both are still wired to
 `hasPlaceholderPricing` in `content/packages.ts`:
@@ -123,7 +117,7 @@ listed here. These are all of them. Each one is a fact we will not invent.
 | `content/media.ts`        | Hero audio                                                      | The signature element of the whole design. Currently absent.      |
 | `content/media.ts`        | Hero and portrait images                                        | The hero runs on type alone and the about page has no photo.      |
 | `content/gallery.ts`      | Every gallery image                                             | The gallery is empty and says so.                                 |
-| `content/testimonials.ts` | The four quotes, transcribed verbatim                           | No testimonials render anywhere.                                  |
+| `content/testimonials.ts` | TJ's Google Business Profile link, and his OK to show these six reviews | The Google badge on each review cannot link to the profile.     |
 | `content/packages.ts`     | Whether the 2027 prices hold for a date left in 2026            | Nothing visible. The page and `/llms.txt` both say 2027.          |
 | `content/faqs.ts`         | Two answers: DJs, lead time                                     | Two of the six FAQs do not render and emit no schema. The cost answer is now built from `content/packages.ts`. |
 

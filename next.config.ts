@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
   // changes. Adding "/about/" here would normalise to "/about" and loop.
   trailingSlash: false,
 
+  // Dev only. Lets a phone on the same wifi load the dev server by its LAN
+  // address. Without it Next blocks its own scripts from any origin other than
+  // localhost, the page never hydrates, nothing is clickable and the gallery
+  // stays invisible because its fade in waits on JavaScript.
+  allowedDevOrigins: ["192.168.*.*"],
+
   images: {
     formats: ["image/avif", "image/webp"],
   },
