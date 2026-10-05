@@ -18,8 +18,16 @@ const nextConfig: NextConfig = {
   // stays invisible because its fade in waits on JavaScript.
   allowedDevOrigins: ["192.168.*.*"],
 
+  // Kept deliberately small. Vercel bills every unique width and format pair as
+  // a transformation, and the Hobby plan allows 5,000 a month. The defaults
+  // (15 widths, AVIF plus WebP) gave about 500 variants per deployment, which a
+  // single crawler working through every size burned through in two days in
+  // October 2026. The sources are already WebP, so AVIF bought little.
   images: {
-    formats: ["image/avif", "image/webp"],
+    formats: ["image/webp"],
+    deviceSizes: [640, 828, 1200, 1920],
+    imageSizes: [96, 384],
+    minimumCacheTTL: 2678400,
   },
 
   async redirects() {
